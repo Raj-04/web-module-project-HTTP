@@ -8,6 +8,7 @@ import MovieHeader from './components/MovieHeader';
 
 import EditMovieForm from './components/EditMovieForm';
 import FavoriteMovieList from './components/FavoriteMovieList';
+import AddMovieForm from './components/AddMovieForm';
 
 import axios from 'axios';
 
@@ -26,10 +27,22 @@ const App = (props) => {
   }, []);
 
   const deleteMovie = (id)=> {
+    const newMovies = movies.filter(movie => movie.id != id)
+    const newFavoriteMovies = favoriteMovies.filter(favoriteMovie => favoriteMovie.id != id)
+    axios.delete(`http://localhost:5000/api/movies/${id}`, movies)
+      .then(resp => {
+        setMovies(newMovies)
+        setFavoriteMovies(newFavoriteMovies)
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   const addToFavorites = (movie) => {
-    
+    if (favoriteMovies.find(favoriteMovie => favoriteMovie.id == movie.id))
+    return console.log('Movie already exists in the favorite list.')
+    else setFavoriteMovies([...favoriteMovies, movie])
   }
 
   return (
@@ -44,11 +57,16 @@ const App = (props) => {
           <FavoriteMovieList favoriteMovies={favoriteMovies}/>
         
           <Switch>
+            <Route path='/movies/add'>
+              <AddMovieForm setMovies={setMovies} />
+            </Route>
+            
             <Route path="/movies/edit/:id">
+              <EditMovieForm setMovies={setMovies} />
             </Route>
 
             <Route path="/movies/:id">
-              <Movie/>
+              <Movie deleteMovie={deleteMovie} addToFavorites={addToFavorites} />
             </Route>
 
             <Route path="/movies">
